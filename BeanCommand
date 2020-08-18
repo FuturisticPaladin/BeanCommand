@@ -1,0 +1,170 @@
+local gui = Instance.new("ScreenGui")
+local player = game.Players.LocalPlayer
+gui.Name = "HackerGui"
+gui.Parent = player:WaitForChild("PlayerGui")
+local mainframe = Instance.new("Frame")
+mainframe.Parent = gui
+mainframe.Size = UDim2.new(0,300,0,200)
+mainframe.Position = UDim2.new(0,200,0,200)
+local holdingmainframe = false
+local uis = game:GetService("UserInputService")
+local holdingoffsetx
+local holdingoffsety
+local minimized = false
+local commandkey = Enum.KeyCode.Semicolon
+uis.InputChanged:Connect(function(event)
+	if event.UserInputType == Enum.UserInputType.MouseMovement then
+		if holdingmainframe == true then
+			mainframe.Position = UDim2.new(0,event.Position.X-holdingoffsetx,0,event.Position.Y-holdingoffsety)
+		end
+	end
+end)
+uis.InputEnded:Connect(function(event)
+	
+end)
+local commandbox = Instance.new("TextBox")
+commandbox.Parent = mainframe
+commandbox.Position = UDim2.new(0,0,1,-20)
+commandbox.Size = UDim2.new(1,0,0,20)
+commandbox.TextXAlignment = Enum.TextXAlignment.Left
+local outputbox = Instance.new("ScrollingFrame")
+outputbox.Parent = mainframe
+outputbox.Position = UDim2.new(0,0,0,20)
+outputbox.Size = UDim2.new(1,0,1,-40)
+mainframe.InputBegan:Connect(function(event)
+	if event.UserInputType == Enum.UserInputType.MouseButton1 then
+		holdingmainframe = true
+		holdingoffsetx = event.Position.X-mainframe.Position.X.Offset
+		holdingoffsety = event.Position.Y-mainframe.Position.Y.Offset
+	end
+end)
+mainframe.InputEnded:Connect(function(event)
+	if event.UserInputType == Enum.UserInputType.MouseButton1 then
+		holdingmainframe = false
+	end
+end)
+uis.InputBegan:Connect(function(event)
+	if event.KeyCode == commandkey then
+		commandbox:CaptureFocus()
+		commandbox.Text = ""
+	end
+end)
+local input = game:GetService("UserInputService")
+local run = game:GetService("RunService")
+local fly = false
+local forwards = false
+local backwards = false
+local left = false
+local right = false
+local flyspeed = 1
+local root
+local humanoid
+local function obtainvalues()
+	while wait() do
+		if player.Character then
+			if not root then
+				root = player.Character:FindFirstChild("HumanoidRootPart")
+			end
+			if not humanoid then
+				humanoid = player.Character:FindFirstChildWhichIsA("Humanoid")
+			end
+		end
+	end
+end
+spawn(obtainvalues)
+input.InputBegan:Connect(function(input,gameProcessed)
+	if input.UserInputType == Enum.UserInputType.Keyboard then
+		if input.KeyCode == Enum.KeyCode.W then
+			forwards = true
+		end
+		if input.KeyCode == Enum.KeyCode.S then
+			backwards = true
+		end
+		if input.KeyCode == Enum.KeyCode.A then
+			left = true
+		end
+		if input.KeyCode == Enum.KeyCode.D then
+			right = true
+		end
+	end
+end)
+input.InputEnded:Connect(function(input,gameProcessed)
+	if input.UserInputType == Enum.UserInputType.Keyboard then
+		if input.KeyCode == Enum.KeyCode.W then
+			forwards = false
+		end
+		if input.KeyCode == Enum.KeyCode.S then
+			backwards = false
+		end
+		if input.KeyCode == Enum.KeyCode.A then
+			left = false
+		end
+		if input.KeyCode == Enum.KeyCode.D then
+			right = false
+		end
+	end
+end)
+run.RenderStepped:Connect(function()
+	if fly == true then
+		if true then
+			if root then
+				root.Anchored = true
+			end
+			game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(game.Workspace.Camera.CFrame-game.Workspace.Camera.CFrame.Position+root.CFrame.Position)
+			if forwards then
+				game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(root.CFrame+root.CFrame.lookVector*flyspeed)
+			end
+			if backwards then
+				game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(root.CFrame+root.CFrame.lookVector*-0.5)
+			end
+			if left then
+				game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(root.CFrame+root.CFrame.rightVector*-0.5)
+			end
+			if right then
+				game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(root.CFrame+root.CFrame.rightVector*0.5)
+			end
+		end
+	end
+end)
+local function runcommand(command,params)
+	if command == ";fly" then
+		if tonumber(params[1]) then
+			if tonumber(params[1]) > 0 then
+				flyspeed = tonumber(params[1])
+			end
+		end
+		fly = true
+	elseif command == ";unfly" then
+		fly = false
+		if root then
+			root.Anchored = false
+		end
+	end
+end
+commandbox.FocusLost:Connect(function(enter)
+	if enter == true then
+		local command = true
+		local commandtext = ""
+		local params = {}
+		local paramstext = ""
+		for c in commandbox.Text:gmatch"." do 
+			if c == " " then
+				if command == true then
+					command = false
+				else
+					table.insert(params,table.getn(params)+1,paramstext)
+					paramstext = ""
+				end
+			else
+				if command then
+					commandtext = commandtext..c
+				else
+					paramstext = paramstext..c
+				end
+			end
+		end
+		table.insert(params,table.getn(params)+1,paramstext)
+		runcommand(commandtext,params)
+		commandbox.Text = ""
+	end
+end)
