@@ -62,11 +62,16 @@ local humanoid
 local function obtainvalues()
 	while wait() do
 		if player.Character then
-			if not root then
-				root = player.Character:FindFirstChild("HumanoidRootPart")
-			end
 			if not humanoid then
 				humanoid = player.Character:FindFirstChildWhichIsA("Humanoid")
+			else
+				if not root then
+					if humanoid.RigType == Enum.HumanoidRigType.R6 then
+						root = player.Character:FindFirstChild("Head")
+					else
+						root = player.Character:FindFirstChild("HumanoidRootPart")
+					end
+				end
 			end
 		end
 	end
