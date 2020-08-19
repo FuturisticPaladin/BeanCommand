@@ -1,6 +1,7 @@
 local gui = Instance.new("ScreenGui")
 local player = game.Players.LocalPlayer
 gui.Name = "HackerGui"
+gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 local mainframe = Instance.new("Frame")
 mainframe.Parent = gui
